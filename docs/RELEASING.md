@@ -67,12 +67,12 @@ instrument 与 e2e 都不在其中，所以先跑 §2 的命令，再打包。
 ```bash
 pnpm --filter @nekowite/desktop exec tauri build --no-bundle
 pnpm package:portable:full  # release/nekowite_<version>_x64，旁边必须有 release/opencode
-pnpm package:portable:acp   # release/nekowite-acp_<version>_x64/nekowite，不附带引擎
+pnpm package:portable:acp   # release/nekowite-acp_<version>_x64-standalone，不附带引擎
 pnpm package:arch:full      # release/nekowite-full-<version>-1-x86_64.pkg.tar.zst
 pnpm package:arch:acp       # release/nekowite-<version>-1-x86_64.pkg.tar.zst
 ```
 
-ACP 版的应用 ELF 可以作为单个可执行文件分发，但仍要求系统 GTK / WebKitGTK 依赖，并需要用户安装可执行的 ACP 智能体。完全版把 OpenCode 一同交付；便携版的应用 ELF 本身并不包含引擎。Arch 脚本必须在提供 `makepkg` 和 `pacman` 的环境中运行，以预先生成的 `release/nekowite_<version>_x64` 为输入，完整包还读取旁边的 `release/opencode`；两种 Arch 包互相冲突，不能同时安装。`package:portable:acp` 会覆盖同名 ACP 目录，运行前核对 `release/` 中待替换的文件。
+ACP 版的应用 ELF 可以作为单个可执行文件分发，但仍要求系统 GTK / WebKitGTK 依赖，并需要用户安装可执行的 ACP 智能体。完全版把 OpenCode 一同交付；便携版的应用 ELF 本身并不包含引擎。Arch 脚本必须在提供 `makepkg` 和 `pacman` 的环境中运行，以预先生成的 `release/nekowite_<version>_x64` 为输入，完整包还读取旁边的 `release/opencode`；两种 Arch 包互相冲突，不能同时安装。`package:portable:acp` 原子替换同名 ACP 单文件，上传时只选择该文件。
 
 ### deb / rpm / AppImage
 
@@ -114,7 +114,7 @@ pnpm package:appimage:acp # 从本次集成 AppDir 构建 ACP AppImage
 | 文件 | 用途 |
 | --- | --- |
 | `nekowite_<version>_x64` | 完全版便携二进制，需与 `opencode` 同目录 |
-| `nekowite-acp_<version>_x64/nekowite` | 不附带 OpenCode 的单个应用 ELF，上传时命名为 `nekowite-acp_<version>_x64` |
+| `nekowite-acp_<version>_x64-standalone` | 不附带 OpenCode 的单个应用 ELF |
 | `opencode` | 内置智能体引擎，**必须与便携二进制放在同一目录** |
 | `nekowite-<arch-version>-1-x86_64.pkg.tar.zst` | Arch ACP 安装包，beta 版本的连字符按 Arch 规则规范化为点 |
 | `nekowite-full-<arch-version>-1-x86_64.pkg.tar.zst` | Arch 完全版安装包 |

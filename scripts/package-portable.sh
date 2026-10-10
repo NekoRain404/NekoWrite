@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Publish a portable Linux edition from a release build. The ACP edition lives
-# in its own directory so it cannot accidentally resolve the full edition's
-# adjacent OpenCode sidecar.
+# Publish portable Linux editions from a release build. The ACP artifact has a
+# distinct filename so release uploaders can ship one executable by itself.
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 VERSION="$(node -p "require('./apps/desktop/src-tauri/tauri.conf.json').version")"
@@ -33,12 +32,9 @@ case "$MODE" in
     echo "Published full edition: $OUT/nekowite_${VERSION}_x64"
     ;;
   lean)
-    DEST="$OUT/nekowite-acp_${VERSION}_x64"
-    rm -rf "$DEST"
-    mkdir -p "$DEST"
-    cp -p "$BIN" "$DEST/nekowite"
-    [ ! -e "$DEST/opencode" ] || { echo "FAIL: ACP edition carried opencode" >&2; exit 1; }
-    echo "Published ACP edition: $DEST/nekowite"
+    DEST="$OUT/nekowite-acp_${VERSION}_x64-standalone"
+    publish_binary "$BIN" "$DEST"
+    echo "Published ACP edition: $DEST"
     ;;
   *)
     echo "FAIL: BUNDLE_MODE must be full or lean, got: $MODE" >&2

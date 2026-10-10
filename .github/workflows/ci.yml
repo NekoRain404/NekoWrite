@@ -31,9 +31,9 @@ jobs:
           python3 scripts/check-reachability.py
           python3 scripts/check-dead-exports.py
           python3 scripts/check-channels.py
-      # The suites that test this repository's own shell scripts. Like the instruments above, both
-      # existed and nothing invoked them — not this workflow, not `scripts/gate.sh` — so either could
-      # have rotted to a permanent failure with every job green. `scripts/gate.sh` runs the same two
+      # The suites that test this repository's own shell scripts. Like the instruments above, they
+      # existed and nothing invoked them — not this workflow, not `scripts/gate.sh` — so any could
+      # have rotted to a permanent failure with every job green. `scripts/gate.sh` runs the same three
       # locally.
       #
       # `package-linux.test.sh` needs a real `rpm` on the machine: it mocks `rpm` with a command that
@@ -47,6 +47,7 @@ jobs:
       - run: |
           bash scripts/boot-probe.test.sh
           bash scripts/package-linux.test.sh
+          bash scripts/package-portable.test.sh
       # The WebKit measurement harness's own tests. Its probes need the real engine and stay out of
       # CI, but these two files are pure logic — crop arithmetic and verdict rules — under `node --test`,
       # which no vitest project and no Playwright pattern collects.

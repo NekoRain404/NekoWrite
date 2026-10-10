@@ -148,8 +148,8 @@ step instruments "the three source instruments" \
       python3 "scripts/$instrument.py" || status=1
     done
     exit $status'
-# The two suites that test the repository's own shell scripts. They were written and left unrun: no
-# step here and no job in CI invoked either, so both could rot to a permanent failure with every check
+# The three suites that test the repository's own shell scripts. They were written and left unrun: no
+# step here and no job in CI invoked them, so any could rot to a permanent failure with every check
 # green — the same "a reading that does not mean what it says" the other instruments exist to stop,
 # one level up (the scripts guard the project and nothing guarded the scripts).
 #
@@ -164,7 +164,7 @@ scripts_step() {
   # kept as evidence beside the log it is summarised from.
   local collected="$LOG_DIR/scripts.checks"
   : > "$collected"
-  for suite in boot-probe package-linux; do
+  for suite in boot-probe package-linux package-portable; do
     echo "--- $suite.test.sh"
     suite_status=0
     bash "scripts/$suite.test.sh" > "$collected" 2>&1 || suite_status=$?

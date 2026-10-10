@@ -98,7 +98,7 @@ pnpm tauri dev
 ```bash
 pnpm --filter @nekowite/desktop exec tauri build --no-bundle
 pnpm package:portable:full   # release/nekowite_<version>_x64 + release/opencode
-pnpm package:portable:acp    # release/nekowite-acp_<version>_x64/nekowite
+pnpm package:portable:acp    # release/nekowite-acp_<version>_x64-standalone
 pnpm package:arch:full       # Arch 包，含 OpenCode
 pnpm package:arch:acp        # Arch 包，使用本机 ACP 智能体
 ```
