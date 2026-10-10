@@ -24,6 +24,7 @@ pkgdir="$PKGDEST/staged"
 mkdir -p "$pkgdir"
 package
 find "$pkgdir" -type f -printf '%P\n' > "$PKGDEST/package-files"
+printf 'URL=%s\n' "$url" > "$PKGDEST/package-metadata"
 printf 'package\n' > "$PKGDEST/$pkgname-$pkgver-$pkgrel-x86_64.pkg.tar.zst"
 MOCK
 cat > "$FIXTURE/mock/pacman" <<'MOCK'
@@ -47,4 +48,8 @@ for size in 32x32 128x128 256x256 512x512; do
     exit 1
   }
 done
+rg -qx 'URL=https://github.com/NekoRain404/NekoWrite' "$FIXTURE/release/package-metadata" || {
+  printf 'FAIL: Arch package metadata has the wrong repository URL\n' >&2
+  exit 1
+}
 echo 'PASS: Arch package contains 32, 128, 256 and 512 pixel application icons'

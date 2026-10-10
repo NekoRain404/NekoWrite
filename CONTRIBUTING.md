@@ -11,7 +11,7 @@
 | Rust | stable + 对应 Tauri v2 系统依赖 | 只有开发桌面壳与 Rust 命令层时需要 |
 
 ```bash
-git clone https://github.com/NekoRain404/NekoWite.git
+git clone https://github.com/NekoRain404/NekoWrite.git
 cd NekoWite
 pnpm install
 

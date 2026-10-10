@@ -6,7 +6,7 @@ A local-first desktop knowledge base: WYSIWYG writing, files that stay plain Mar
 
 本地优先的开源桌面知识库：在所见即所得里写作，文件仍是你自己的 Markdown。
 
-[![CI](https://github.com/NekoRain404/NekoWite/actions/workflows/ci.yml/badge.svg)](https://github.com/NekoRain404/NekoWite/actions/workflows/ci.yml)
+[![CI](https://github.com/NekoRain404/NekoWrite/actions/workflows/ci.yml/badge.svg)](https://github.com/NekoRain404/NekoWrite/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-1f6feb?logo=opensourceinitiative&logoColor=white)](LICENSE)
 [![Tauri v2](https://img.shields.io/badge/Tauri-v2-24c8db?logo=tauri&logoColor=white)](https://tauri.app/)
 [![Vue 3](https://img.shields.io/badge/Vue-3-42b883?logo=vuedotjs&logoColor=white)](https://vuejs.org/)
@@ -82,7 +82,7 @@ Linux 提供两个发行方向：
 环境：Node.js 22、pnpm 11。跑桌面应用还需要 Rust stable 和 [Tauri v2 系统依赖](https://v2.tauri.app/start/prerequisites/)。
 
 ```bash
-git clone https://github.com/NekoRain404/NekoWite.git
+git clone https://github.com/NekoRain404/NekoWrite.git
 cd NekoWite
 pnpm install
 
