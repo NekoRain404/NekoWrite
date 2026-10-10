@@ -52,7 +52,7 @@ export async function driveConflict({ run, script, findElement, typeText, pressC
 
   // ---- Arm A: the file changes underneath a clean tab, and the user takes the disk's version -------------
   readings.conflict.beforeArmA = readFile()
-  fs.writeFileSync(notePath, `# ${'drive-probe-note'}\n\n${token}-from-disk\n`)
+  fs.writeFileSync(notePath, `# ${'drive-probe-note'}\n\n![probe](probe-asset.svg)\n\n${token}-from-disk\n`)
   readings.conflict.dialogA = await until(async () => (await dialogNow()) ?? null, {
     timeout: NOTICE_TIMEOUT_MS,
     what: 'the external-change dialog to appear',
@@ -91,7 +91,7 @@ export async function driveConflict({ run, script, findElement, typeText, pressC
     async () => ((await dialogNow()) === null ? true : null),
     { timeout: 5_000, what: 'no conflict dialog before the second write' },
   ).catch(() => false)
-  fs.writeFileSync(notePath, `# ${'drive-probe-note'}\n\n${token}-from-disk-again\n`)
+  fs.writeFileSync(notePath, `# ${'drive-probe-note'}\n\n![probe](probe-asset.svg)\n\n${token}-from-disk-again\n`)
   readings.conflict.dialogB = await until(async () => (await dialogNow()) ?? null, {
     timeout: NOTICE_TIMEOUT_MS,
     what: 'the second external-change dialog to appear',
