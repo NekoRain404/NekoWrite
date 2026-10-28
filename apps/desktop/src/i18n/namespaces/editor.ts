@@ -109,6 +109,7 @@ export const editor = {
        *  panel used to show for every picture (it probed the raw src). */
       originalUnknown: 'Not known — the image has not loaded',
       restoreSize: 'Restore size',
+      refresh: 'Refresh image',
       replace: 'Replace',
       delete: 'Delete',
     },
@@ -231,6 +232,7 @@ export const editor = {
       /** 原始尺寸里的那个「—」：vault 图片以前每一张都是这个（探测的是原始 src）。 */
       originalUnknown: '未知——图片尚未加载',
       restoreSize: '恢复尺寸',
+      refresh: '刷新图片',
       replace: '替换图片',
       delete: '删除图片',
     },

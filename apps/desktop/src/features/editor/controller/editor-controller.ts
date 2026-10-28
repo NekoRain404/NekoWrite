@@ -6,6 +6,7 @@ import {
   configureImageResolver,
   configureWikilinkHandler,
   createEditor,
+  invalidateImageResolution,
 } from '@nekowite/editor-core'
 import type { NekoEditor } from '@nekowite/editor-core'
 import { setActiveEditor } from '@nekowite/plugin-host'
@@ -13,9 +14,10 @@ import { guardEditorForPlugins } from '../../../services/plugin-editor-guard'
 import { watch } from 'vue'
 import { editorSessionManager } from '../session-manager'
 import { setCalloutView } from '../../../plugins/callout'
-import { createImageSrcResolver } from '../../attachments'
+import { createImageSrcResolver, isImagePath } from '../../attachments'
 import { dirRelativeToVault, notePathRelativeToVault } from '../../notes'
 import { getSharedGateways } from '../../../platform/runtime/gateway-runtime'
+import type { FsChangeEvent } from '../../../platform/gateways/contracts'
 import { useTabsStore } from '../../../stores/tabs'
 import { useDocumentListStore } from '../../../stores/document-list'
 import { useVaultSessionStore } from '../../../stores/vault-session'
@@ -29,6 +31,8 @@ export interface EditorControllerDeps {
   session: DocumentSession
   /** The editor mount element (inside the rendered pane). */
   getEditorEl: () => HTMLElement | null
+  /** Test seam for the vault filesystem event stream used by image refresh. */
+  onFsChange?: (cb: (event: FsChangeEvent) => void) => Promise<() => void>
 }
 
 export interface EditorController {
@@ -53,6 +57,8 @@ export function createEditorController(deps: EditorControllerDeps): EditorContro
   const documentList = useDocumentListStore()
   const vaultSession = useVaultSessionStore()
   let registeredTabId: string | null = null
+  let stopImageWatch: (() => void) | null = null
+  let imageWatchGeneration = 0
 
   // The pane can mount before the first tab opens (a later openTab fires the
   // activeId watch), so the editor is registered under a placeholder tab id and
@@ -99,6 +105,25 @@ export function createEditorController(deps: EditorControllerDeps): EditorContro
       // vault + note it was produced for.
       { scope: () => JSON.stringify([tabs.vault, tabs.activeTab?.path ?? null]) },
     )
+    const watchGeneration = ++imageWatchGeneration
+    const onFsChange = deps.onFsChange ?? ((cb) => getSharedGateways().fs.onFsChange(cb))
+    void onFsChange((event) => {
+      if (watchGeneration !== imageWatchGeneration) return
+      const vault = tabs.vault?.replace(/[\\/]+$/, '')
+      if (!vault) return
+      const changedPath = event.path.replace(/\\/g, '/')
+      const root = vault.replace(/\\/g, '/')
+      if (changedPath !== root && !changedPath.startsWith(`${root}/`)) return
+      if (event.kind === 'resync' || isImagePath(changedPath)) {
+        invalidateImageResolution()
+      }
+    }).then((off) => {
+      if (watchGeneration !== imageWatchGeneration) off()
+      else stopImageWatch = off
+    }).catch(() => {
+      // The vault index owns the user-facing watcher health state. Image refresh
+      // is best-effort and must not prevent the editor itself from mounting.
+    })
     // editor-core is i18n-free, so its image failure copy defaults to English.
     // Install the app's strings (including the honest "blocked by the security
     // policy" wording for a remote image the CSP refuses) at mount time.
@@ -134,6 +159,9 @@ export function createEditorController(deps: EditorControllerDeps): EditorContro
   }
 
   function destroy(): void {
+    imageWatchGeneration += 1
+    stopImageWatch?.()
+    stopImageWatch = null
     deps.session.editor = null
     // Order matters: detach the decorators/resolvers and the plugin-view callback
     // before destroying the ProseMirror view so a destroyed view is never re-wired.

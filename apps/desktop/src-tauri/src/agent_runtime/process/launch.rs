@@ -12,6 +12,7 @@
 //! doc carries what T3a found and what T12 refused to do about it.
 
 use std::path::PathBuf;
+use std::time::Duration;
 
 use agent_client_protocol::AcpAgentConfig;
 
@@ -26,6 +27,8 @@ use super::super::secret::Secret;
 /// spelling of the system bundle; a distribution that keeps its store
 /// elsewhere can override it through [`EngineLaunch::ca_bundle`].
 pub const SYSTEM_CA_BUNDLE: &str = "/etc/ssl/certs/ca-certificates.crt";
+const LOCAL_INITIALIZE_BOUND: Duration = Duration::from_secs(20);
+const PACKAGE_LAUNCH_INITIALIZE_BOUND: Duration = Duration::from_secs(120);
 
 /// How to start one engine.
 ///
@@ -56,6 +59,16 @@ pub struct EngineLaunch {
 }
 
 impl EngineLaunch {
+    /// Package launchers may need to download an ACP bridge before they can answer initialize.
+    pub fn initialize_bound(&self) -> Duration {
+        let launcher = self.program.file_name().and_then(|name| name.to_str());
+        if matches!(launcher, Some("npx" | "npm" | "pnpm" | "bunx" | "uvx")) {
+            PACKAGE_LAUNCH_INITIALIZE_BOUND
+        } else {
+            LOCAL_INITIALIZE_BOUND
+        }
+    }
+
     /// The SDK's launch description, with the CA variable resolved.
     ///
     /// This is one of the places the text itself has to exist — the SDK hands
@@ -109,4 +122,28 @@ pub fn env_pairs(pairs: impl IntoIterator<Item = (String, String)>) -> Vec<(Stri
         .into_iter()
         .map(|(name, value)| (name, Secret::new(value)))
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{EngineLaunch, LOCAL_INITIALIZE_BOUND, PACKAGE_LAUNCH_INITIALIZE_BOUND};
+    use std::path::PathBuf;
+
+    #[test]
+    fn package_managers_get_download_time_but_native_engines_keep_short_handshake_bound() {
+        let package_launch = EngineLaunch {
+            program: PathBuf::from("/usr/bin/npx"),
+            ..EngineLaunch::default()
+        };
+        let native_launch = EngineLaunch {
+            program: PathBuf::from("/usr/bin/opencode"),
+            ..EngineLaunch::default()
+        };
+
+        assert_eq!(
+            package_launch.initialize_bound(),
+            PACKAGE_LAUNCH_INITIALIZE_BOUND
+        );
+        assert_eq!(native_launch.initialize_bound(), LOCAL_INITIALIZE_BOUND);
+    }
 }

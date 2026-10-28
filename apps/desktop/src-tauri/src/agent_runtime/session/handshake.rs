@@ -13,8 +13,8 @@
 
 use super::super::capabilities::Handshake;
 use super::super::events::TransportError;
+use super::AgentRuntime;
 use super::SessionError;
-use super::{AgentRuntime, INITIALIZE_BOUND};
 
 impl AgentRuntime {
     /// Negotiates the protocol and returns the engine's answer.
@@ -25,7 +25,10 @@ impl AgentRuntime {
     pub async fn initialize(
         &self,
     ) -> Result<agent_client_protocol::schema::v1::InitializeResponse, TransportError> {
-        let response = self.connection.initialize(INITIALIZE_BOUND).await?;
+        let response = self
+            .connection
+            .initialize(self.connection.initialize_bound())
+            .await?;
         *self.handshake.lock().unwrap() = Some(Handshake::of(&response));
         Ok(response)
     }

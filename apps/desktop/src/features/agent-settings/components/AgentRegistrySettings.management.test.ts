@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createApp, nextTick } from 'vue'
 import AgentRegistrySettings from './AgentRegistrySettings.vue'
-import type { AgentRegistryClient, AgentRegistryEntry } from '../services/agent-registry-policy'
+import type { AgentDiscoveryCandidate, AgentRegistryClient, AgentRegistryEntry } from '../services/agent-registry-policy'
 
 const entry: AgentRegistryEntry = {
   agentId: 'custom', displayName: 'Custom', source: 'external', program: '/usr/bin/custom',
@@ -10,8 +10,21 @@ const entry: AgentRegistryEntry = {
 }
 const cleanups: (() => void)[] = []
 afterEach(() => cleanups.splice(0).forEach((cleanup) => cleanup()))
-async function mount(running = false, defaultAgentId = 'opencode') {
-  let entries = [entry]
+const bundledAgent: AgentRegistryEntry = {
+  ...entry, agentId: 'opencode', displayName: 'OpenCode', source: 'bundled',
+  program: '/usr/bin/opencode', args: ['acp'], adapterId: 'opencode',
+}
+const discoveredOpenCode: AgentDiscoveryCandidate = {
+  agentId: 'opencode', displayName: 'OpenCode', command: 'opencode', program: '/usr/bin/opencode',
+  args: ['acp'], available: true, adapterId: 'opencode',
+}
+async function mount(
+  running = false,
+  defaultAgentId = 'opencode',
+  initialEntries: AgentRegistryEntry[] = [entry],
+  candidates: AgentDiscoveryCandidate[] = [],
+) {
+  let entries = initialEntries
   const deleteAgent = vi.fn(async () => { entries = []; return null })
   const update = vi.fn(async (_agentId: string, draft: { displayName: string; program: string }) => {
     entries = [{ ...entry, displayName: draft.displayName, program: draft.program }]; return null
@@ -19,7 +32,8 @@ async function mount(running = false, defaultAgentId = 'opencode') {
   const client: AgentRegistryClient = {
     read: async () => ({ defaultAgentId, entries, adapterIds: ['generic-acp'],
       runningAgentIds: running ? ['custom'] : [], profileOwners: { default: 'opencode' } }),
-    add: vi.fn(async () => null), update, setEnabled: vi.fn(async () => null), delete: deleteAgent,
+    discover: vi.fn(async () => candidates), add: vi.fn(async () => null), update,
+    setEnabled: vi.fn(async () => null), delete: deleteAgent,
   }
   const host = document.createElement('div')
   document.body.append(host)
@@ -36,6 +50,18 @@ async function click(host: HTMLElement, selector: string) {
   await nextTick(); await nextTick(); await nextTick()
 }
 describe('Agent registration management', () => {
+  it('suggests a free ID when discovering an executable for a bundled registration', async () => {
+    const { host } = await mount(false, 'opencode', [entry, bundledAgent], [discoveredOpenCode])
+    await click(host, '[data-test="registry-discover"]')
+    const use = [...host.querySelectorAll('button')].find((button) => button.textContent?.includes('填入表单'))
+    expect(use).toBeDefined()
+    use!.click()
+    await nextTick(); await nextTick()
+
+    expect(host.querySelector<HTMLInputElement>('[data-test="registry-field-agentId"]')?.value).toBe('opencode-2')
+    expect(host.querySelector<HTMLInputElement>('[data-test="registry-field-program"]')?.value).toBe('/usr/bin/opencode')
+    expect(host.querySelector('[data-test="registry-problem-agentId"]')).toBeNull()
+  })
   it('opens the registered agent in an update form and refreshes after save', async () => {
     const { host, update } = await mount()
     await click(host, '[data-test="registry-edit-custom"]')

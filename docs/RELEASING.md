@@ -183,8 +183,8 @@ PORTABLE=0 bash scripts/package-win.sh      # NSIS 安装包：release/nekowite_
 - **Linux 包的 GPG 签名**：见 §4；需要先决定密钥托管与公钥分发。
 - **Windows 代码签名证书**（OV/EV、时间戳服务）：见 §7；拿到证书后在 `bundle.windows` 里配置证书
   指纹或自定义签名命令。
-- **自动更新端点**：当前没有更新检查（没有 updater 插件、没有端点）。若要发布后可自动升级，
-  需要先决定托管位置与更新签名密钥。
+- **自动安装更新**：设置 → 关于目前只提供手动 GitHub 最新稳定版检查与发布页链接，不下载或安装更新。
+  自动升级仍需先决定托管位置与更新签名密钥。
 - **macOS 构建**：图标资源已包含 `.icns`，但仓库没有对应的打包脚本，也没有 CI；需要单独的流水线。
 - **许可证**：MIT 的 `LICENSE` **已经提交**（`git ls-files LICENSE` 有它），两个 `package.json` 也写了
   `"license": "MIT"`；这项工作只剩在发布说明里确认。

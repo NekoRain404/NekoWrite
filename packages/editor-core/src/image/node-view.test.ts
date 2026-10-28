@@ -135,6 +135,18 @@ describe('image node view', () => {
     expect(img.getAttribute('src')).toMatch(/^attachments\/a\.png\?retry=\d+$/)
   })
 
+  it('reloads a successfully loaded display URL after image resolution is invalidated', async () => {
+    configureImageResolver(async () => 'asset:///vault/attachments/a.png')
+    const { img } = makeView(fakeNode({ src: 'attachments/a.png', alt: '', title: '' }))
+    await flush()
+    expect(img.getAttribute('src')).toBe('asset:///vault/attachments/a.png')
+
+    invalidateImageResolution()
+    await flush()
+
+    expect(img.getAttribute('src')).toMatch(/^asset:\/\/\/vault\/attachments\/a\.png\?refresh=\d+$/)
+  })
+
   it('applies a newer update and ignores the stale resolution result', async () => {
     configureImageResolver(async (src) => `resolved:${src}`)
     const node = fakeNode({ src: 'a.png', alt: '', title: '' })

@@ -36,6 +36,10 @@ use super::super::usage::{self, PromptEnding};
 use super::EngineConnection;
 
 impl EngineConnection {
+    pub fn initialize_bound(&self) -> Duration {
+        self.initialize_bound
+    }
+
     /// Negotiates the protocol.
     ///
     /// The version is checked here as well as by the SDK's own guard: a version

@@ -234,7 +234,7 @@ mod tests {
             display_name: "Codex ACP".into(),
             command: "npx".into(),
             program: "/usr/bin/npx".into(),
-            args: vec!["--yes".into(), "@zed-industries/codex-acp".into()],
+            args: vec!["--yes".into(), "@agentclientprotocol/codex-acp".into()],
             available: true,
             adapter_id: "generic-acp".into(),
         };
@@ -325,7 +325,7 @@ mod tests {
                 display_name: "Codex ACP".into(),
                 command: "npx".into(),
                 program: "/usr/bin/npx".into(),
-                args: vec!["--yes".into(), "@zed-industries/codex-acp".into()],
+                args: vec!["--yes".into(), "@agentclientprotocol/codex-acp".into()],
                 available: true,
                 adapter_id: "generic-acp".into(),
             }],

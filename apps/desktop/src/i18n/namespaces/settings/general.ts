@@ -1,6 +1,22 @@
 /** The general page. */
 export const general = {
   en: {
+    about: {
+      title: 'About NekoWrite',
+      versionUnavailable: 'Unavailable',
+      updates: 'Updates',
+      updateHint: 'Check GitHub for the latest stable release. Updates are downloaded and installed manually.',
+      check: 'Check for updates',
+      checking: 'Checking for updates…',
+      updateAvailable: 'Version {version} is available.',
+      upToDate: 'You are using the latest release ({version}).',
+      updateFailed: 'Could not check for updates',
+      releasePage: 'Open release page',
+      project: 'Project',
+      sourceCode: 'Source code on GitHub',
+      description: 'A calm workspace for writing, research and AI-assisted work.',
+      license: 'Licensed under MIT.',
+    },
     general: {
       vault: 'Library',
       vaultNote: 'Switching libraries closes all currently open documents.',
@@ -13,6 +29,22 @@ export const general = {
     },
   },
   zh: {
+    about: {
+      title: '关于 NekoWrite',
+      versionUnavailable: '暂不可用',
+      updates: '更新',
+      updateHint: '检查 GitHub 上的最新正式版。下载和安装由你手动完成。',
+      check: '检查更新',
+      checking: '正在检查更新…',
+      updateAvailable: '发现新版本 {version}。',
+      upToDate: '当前已是最新版本（{version}）。',
+      updateFailed: '检查更新失败',
+      releasePage: '打开发布页面',
+      project: '项目',
+      sourceCode: '在 GitHub 查看源代码',
+      description: '为写作、研究和 AI 协作打造的宁静工作空间。',
+      license: '采用 MIT 许可证。',
+    },
     general: {
       vault: '知识库',
       vaultNote: '切换知识库会关闭当前所有打开的文档。',

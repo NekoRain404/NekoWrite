@@ -127,8 +127,14 @@ async function submit(): Promise<void> {
 function useCandidate(candidate: AgentDiscoveryCandidate): void {
   const existing = entries.value.find((entry) => entry.agentId === candidate.agentId)
   if (existing?.source === 'external') editRegistration(existing)
-  else editing.value = null
-  form.agentId = candidate.agentId
+  else {
+    editing.value = null
+    // A system install may share the preset ID of a bundled engine; register it as a distinct
+    // external engine instead of pre-filling a form that duplicate-ID validation will reject.
+    form.agentId = existing === undefined
+      ? candidate.agentId
+      : suggestRegistrationId(candidate.displayName, candidate.program, entries.value)
+  }
   form.displayName = candidate.displayName
   form.program = candidate.program
   form.args = candidate.args.join('\n')

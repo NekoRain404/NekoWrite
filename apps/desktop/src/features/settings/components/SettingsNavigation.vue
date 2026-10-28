@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import {
-  Activity, Bell, Bot, Cable, Cat, ChevronDown, Download, FileCog, FolderGit2,
+  Activity, Bell, Bot, Cable, Cat, ChevronDown, Download, FileCog, FolderGit2, Info,
   Globe, Heart, MessageCircle, Palette, PawPrint, Puzzle, Server, Settings2,
   ShieldCheck, SlidersHorizontal, Sparkles, Type, UserRound, Wand2,
 } from 'lucide-vue-next'
@@ -23,6 +23,7 @@ const SECTIONS = computed<Array<{ id: SettingsSectionId; label: string; icon: ty
   { id: 'export', label: t('settings.section.export'), icon: Download },
   { id: 'ai', label: t('settings.section.ai'), icon: Sparkles },
   { id: 'plugins', label: t('settings.section.plugins'), icon: Puzzle },
+  { id: 'about', label: t('settings.section.about'), icon: Info },
   { id: 'agents', label: t('settings.section.agents'), icon: Bot },
   { id: PET_SETTINGS_SECTION, label: t('settings.section.desktopPet'), icon: PawPrint },
 ])
@@ -103,8 +104,16 @@ watch(activeSection, (section) => {
 </script>
 
 <template>
-  <aside class="dialog-nav" role="tablist" :aria-label="t('settings.dialogTitle')">
-    <div v-for="s in SECTIONS" :key="s.id" class="nav-group">
+  <aside
+    class="dialog-nav"
+    role="tablist"
+    :aria-label="t('settings.dialogTitle')"
+  >
+    <div
+      v-for="s in SECTIONS"
+      :key="s.id"
+      class="nav-group"
+    >
       <button
         type="button"
         class="nav-row"
@@ -115,7 +124,12 @@ watch(activeSection, (section) => {
         :aria-expanded="isExpandable(s.id) ? isExpanded(s.id) : undefined"
         @click="openSection(s.id)"
       >
-        <component :is="s.icon" class="nav-row-icon" :size="16" :stroke-width="1.8" />
+        <component
+          :is="s.icon"
+          class="nav-row-icon"
+          :size="16"
+          :stroke-width="1.8"
+        />
         <span>{{ s.label }}</span>
         <ChevronDown
           v-if="isExpandable(s.id)"
@@ -143,7 +157,11 @@ watch(activeSection, (section) => {
             :data-page="page.id"
             @click="openAgentPage(page.id)"
           >
-            <component :is="page.icon" :size="13" :stroke-width="1.8" />
+            <component
+              :is="page.icon"
+              :size="13"
+              :stroke-width="1.8"
+            />
             <span>{{ page.label }}</span>
           </button>
         </div>
@@ -164,7 +182,11 @@ watch(activeSection, (section) => {
             :data-page="page.id"
             @click="openPetPage(page.id)"
           >
-            <component :is="page.icon" :size="13" :stroke-width="1.8" />
+            <component
+              :is="page.icon"
+              :size="13"
+              :stroke-width="1.8"
+            />
             <span>{{ page.label }}</span>
           </button>
         </div>

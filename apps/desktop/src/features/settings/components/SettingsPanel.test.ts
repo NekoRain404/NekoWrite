@@ -111,3 +111,16 @@ describe('SettingsPanel version row', () => {
     expect(/undefined|NaN/.test(text)).toBe(false)
   })
 })
+
+describe('SettingsPanel About section', () => {
+  it('opens About from settings navigation and shows release checking', async () => {
+    mountPanel()
+    const about = Array.from(document.querySelectorAll<HTMLElement>('.nav-row'))
+      .find((row) => row.textContent?.includes('关于'))
+    expect(about).toBeTruthy()
+    about?.click()
+    await nextTick()
+    expect(document.querySelector('[data-test="about-version"]')).toBeTruthy()
+    expect(document.querySelector('[data-test="check-updates"]')).toBeTruthy()
+  })
+})

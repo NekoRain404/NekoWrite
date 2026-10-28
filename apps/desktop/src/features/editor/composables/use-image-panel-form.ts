@@ -68,6 +68,8 @@ export interface ImagePanelForm {
   restore: () => void
   replace: () => void
   remove: () => void
+  /** Force the selected image's resolved display URL to load again. */
+  refreshImage: () => void
   /** Re-read the node (and the image's own pixels) into the form. */
   syncFromNode: () => void
   dismiss: () => void
@@ -137,7 +139,7 @@ export function useImagePanelForm(options: ImagePanelFormOptions): ImagePanelFor
    * needs went with the dash. This waits on the node view's own request instead
    * of starting a second one, and reports "not known yet" rather than guessing.
    */
-  function syncNatural(pos: number): void {
+  function syncNatural(pos: number, waitForReload = false): void {
     const rev = ++naturalRev
     natural.value = null
     const img = imgFor(pos)
@@ -146,9 +148,10 @@ export function useImagePanelForm(options: ImagePanelFormOptions): ImagePanelFor
       if (rev !== naturalRev) return
       natural.value = intrinsicSize(img)
     }
-    read()
-    // Still in flight: the node view's own element fires this when it lands.
-    if (natural.value === null) img.addEventListener('load', read, { once: true })
+    if (!waitForReload) read()
+    // A forced refresh may replace bytes at the same path. Ignore the old
+    // element dimensions until the cache-busted request finishes.
+    if (waitForReload || natural.value === null) img.addEventListener('load', read, { once: true })
   }
 
   function syncFromNode(): void {
@@ -315,6 +318,13 @@ export function useImagePanelForm(options: ImagePanelFormOptions): ImagePanelFor
     selected.value = null
   }
 
+  function onRefreshImage(): void {
+    const pos = selected.value?.pos
+    if (pos === undefined) return
+    syncNatural(pos, true)
+    invalidateImageResolution()
+  }
+
   /**
    * Close the panel because the reader asked it to (Escape), rather than
    * because the selection went away on its own.
@@ -375,6 +385,7 @@ export function useImagePanelForm(options: ImagePanelFormOptions): ImagePanelFor
     restore: onRestore,
     replace: onReplace,
     remove: onDelete,
+    refreshImage: onRefreshImage,
     syncFromNode,
     dismiss,
   }

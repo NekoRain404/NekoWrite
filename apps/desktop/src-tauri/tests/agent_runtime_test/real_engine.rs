@@ -4,7 +4,7 @@
 use std::path::Path;
 
 use nekowite_lib::agent_runtime::{
-    env_pairs, isolated_profile_env, EngineConnection, EngineLaunch, INITIALIZE_BOUND,
+    env_pairs, isolated_profile_env, EngineConnection, EngineLaunch,
 };
 
 use crate::support::{start, temp_dir};
@@ -47,7 +47,7 @@ async fn installed_agent_answers_through_the_application_transport() {
         .await
         .expect("start local agent");
     let answer = connection
-        .initialize(INITIALIZE_BOUND)
+        .initialize(launch.initialize_bound())
         .await
         .expect("local ACP initialize");
     assert_eq!(answer.protocol_version.as_u16(), 1);

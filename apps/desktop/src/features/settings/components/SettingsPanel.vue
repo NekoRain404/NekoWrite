@@ -39,6 +39,7 @@ import { X } from 'lucide-vue-next'
 import { t } from '../../../i18n'
 import AgentSettingsSection from './AgentSettingsSection.vue'
 import AiSettings from './AiSettings.vue'
+import AboutSettings from './AboutSettings.vue'
 import AppearanceSettings from './AppearanceSettings.vue'
 import EditorSettings from './EditorSettings.vue'
 import ExportSettings from './ExportSettings.vue'
@@ -253,6 +254,10 @@ watch(
             />
             <PluginSettings
               v-else-if="activeSection === 'plugins'"
+            />
+            <AboutSettings
+              v-else-if="activeSection === 'about'"
+              :app-version="appVersion"
             />
             <AiSettings
               v-else-if="activeSection === 'ai'"

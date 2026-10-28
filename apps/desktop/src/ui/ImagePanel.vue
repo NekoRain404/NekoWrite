@@ -12,7 +12,7 @@ const props = defineProps<{ editor: NekoEditor | null }>()
 // The form is the feature's (its selection subscription, the one-transaction
 // writes, the lock); this component is its wiring and its markup.
 const form = useImagePanelForm({ getEditor: () => props.editor })
-const { alt, title, link, width, height, align, locked, lockAvailable, natural, shownSize, visible } =
+const { alt, title, link, width, height, align, locked, lockAvailable, natural, shownSize, visible, refreshImage } =
   form
 
 /** The three alignments the editor's schema understands (see the `patch` call
@@ -217,6 +217,14 @@ function onKeydown(e: KeyboardEvent): void {
     </div>
 
     <div class="neko-image-actions">
+      <button
+        type="button"
+        class="neko-image-btn"
+        data-test="refresh-image"
+        @click="refreshImage"
+      >
+        {{ t('imagePanel.refresh') }}
+      </button>
       <button
         type="button"
         class="neko-image-btn"

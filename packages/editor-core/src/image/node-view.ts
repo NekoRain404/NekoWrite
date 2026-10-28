@@ -253,13 +253,18 @@ export const makeImageNodeView: NodeViewConstructor = (node, view, getPos) => {
   // not authorized, the file mid-write) must not stay failed: a pending
   // invalidation re-runs it.
   const stopInvalidationWatch = onImageResolutionInvalidated(() => {
-    if (version === 0 || !failedSrc) return
-    const src = failedSrc
+    if (version === 0) return
+    const src = String(node.attrs.src ?? '')
+    if (!src) return
     const mine = ++version
-    void resolveImageSrc(src).then((display) => {
+    void resolveImageSrc(src, { refresh: true }).then((display) => {
       if (version !== mine) return
-      expectedSrc = display
-      img.setAttribute('src', display)
+      const current = img.getAttribute('src')
+      const next = display === current && !/^(data|blob):/i.test(display)
+        ? `${display}${display.includes('?') ? '&' : '?'}refresh=${Date.now()}`
+        : display
+      expectedSrc = next
+      img.setAttribute('src', next)
     })
   })
 

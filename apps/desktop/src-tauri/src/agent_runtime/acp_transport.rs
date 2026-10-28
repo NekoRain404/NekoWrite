@@ -73,6 +73,7 @@ pub struct PermissionRequest {
 /// A live ACP connection to one engine process.
 pub struct EngineConnection {
     connection: ConnectionTo<Agent>,
+    initialize_bound: std::time::Duration,
     /// Two senders, dropped together. The first ends the connection task,
     /// which drops the transport — and with it the child's stdin, so the
     /// engine sees EOF. The second hands the child to the supervisor, which
@@ -322,6 +323,7 @@ impl EngineConnection {
         Ok((
             EngineConnection {
                 connection,
+                initialize_bound: launch.initialize_bound(),
                 stop: Mutex::new(Some((stop, child_stop))),
                 engine,
                 trip,

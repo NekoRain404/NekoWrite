@@ -98,4 +98,19 @@ describe('image panel dismissal', () => {
     expect(getSelectedImage()).toBeNull()
     expect(document.querySelector('.neko-image-panel')).toBeNull()
   })
+
+  it('refreshes the selected image without changing the note or its undo history', async () => {
+    const { editor, pos } = await makeImageEditor()
+    const panel = await openPanel(editor, pos)
+    const before = editor.getView().state
+
+    const refresh = panel.querySelector<HTMLButtonElement>('[data-test="refresh-image"]')
+    expect(refresh).toBeTruthy()
+    refresh!.click()
+    await flush()
+
+    expect(editor.getView().state.doc).toBe(before.doc)
+    expect(editor.getView().state.selection).toBeInstanceOf(NodeSelection)
+    expect(document.querySelector('.neko-image-panel')).toBeTruthy()
+  })
 })

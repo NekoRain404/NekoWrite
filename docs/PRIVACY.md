@@ -75,7 +75,7 @@ NekoWite 不收集遥测、不需要账号。本地知识库的编辑、保存�
 
 ## 不收集什么
 
-- 没有遥测，没有使用统计，没有崩溃上报，没有账号，也没有检查更新请求：仓库里没有任何相关 SDK 或上报端点（可以自行 grep 验证）。
+- 没有遥测、使用统计或崩溃上报。设置 → 关于中的“检查更新”仅在你点击时请求 GitHub Releases API（`api.github.com/repos/NekoRain404/NekoWrite/releases/latest`），只发送标准 HTTPS 请求元数据，不发送笔记、路径、配置或设备标识；应用不会自动下载或安装更新。
 - **以下操作可能联网**：
   - **你自己配置的 AI 请求**（见上一节）：包括「刷新模型列表」，它也走你的服务商。
   - **桌面宠物的形象库**：打开设置 → 桌面宠物 → 形象库时，会去 `pets.thenightwatcher.online` 取清单（`desktop_pet/resources.rs` 的 `LIBRARY_ENDPOINT`）。它不经过 AI 设置，也不带任何凭据。

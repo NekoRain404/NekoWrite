@@ -16,6 +16,7 @@ import { buildComponentRenderers } from './export-renderers'
 import { exportPageCss, injectExportPageCss } from './export-page'
 import { renderHtmlToImage, type ExportImageFormat } from './export-image'
 import { htmlTablesToCsv, htmlToPlainText } from './export-text'
+import { createBrowserPdfImageAdapter, optimizePdfImages } from './pdf-image-optimization'
 import {
   exportSettings,
   prepareSource,
@@ -136,35 +137,39 @@ export async function exportToPdf(source: string, opts: ExportUiOptions): Promis
       decide('no-print-started')
       return
     }
-    // `window.print()` does NOT block — measured: it returns in ~0 ms and the
-    // preview is rendered afterwards. Removing the frame on the next line (what
-    // this used to do) therefore detached the document the preview was still
-    // reading, and the export silently did nothing. `afterprint` is the real
-    // "the user is finished" signal; until it arrives the frame has to stay.
-    // An `afterprint` also settles the outcome: a print that finished started.
-    win.addEventListener(
-      'afterprint',
-      () => {
-        decide('printed')
+    const startPrint = (): void => {
+      // `window.print()` returns immediately; keep the frame until afterprint
+      // so the webview can finish reading the rendered document.
+      win.addEventListener(
+        'afterprint',
+        () => {
+          decide('printed')
+          cleanup()
+        },
+        { once: true },
+      )
+      win.addEventListener('beforeprint', () => decide('printed'), { once: true })
+      win.focus()
+      try {
+        win.print()
+      } catch {
         cleanup()
-      },
-      { once: true },
-    )
-    win.addEventListener('beforeprint', () => decide('printed'), { once: true })
-    win.focus()
-    try {
-      win.print()
-    } catch {
-      // A webview that refuses to print at all: there is nothing to wait for.
-      cleanup()
-      decide('no-print-started')
-      return
+        decide('no-print-started')
+        return
+      }
+      if (cleanupTimer !== undefined) clearTimeout(cleanupTimer)
+      cleanupTimer = setTimeout(cleanup, PRINT_BACKSTOP_MS)
     }
-    // Backstop for a webview that never fires `afterprint`. It replaces the
-    // load-safety timer rather than adding to it, because the user may sit in
-    // the print dialog for as long as they like.
-    if (cleanupTimer !== undefined) clearTimeout(cleanupTimer)
-    cleanupTimer = setTimeout(cleanup, PRINT_BACKSTOP_MS)
+    // The live frame has applied the print CSS now, so use its actual layout
+    // boxes before deciding how many pixels an embedded raster needs.
+    if (win.document) {
+      void optimizePdfImages(win.document.documentElement.outerHTML, createBrowserPdfImageAdapter(win.document))
+        .catch(() => undefined)
+        .then(() => startPrint())
+    } else {
+      startPrint()
+    }
+
   }
 
   return { outcome }

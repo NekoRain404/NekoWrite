@@ -40,9 +40,9 @@ const KNOWN_AGENTS: &[KnownAgent] = &[
         id: "codex-acp",
         display_name: "Codex ACP",
         launcher: "npx",
-        required_commands: &["npx", "codex"],
+        required_commands: &["npx"],
         adapter_id: "generic-acp",
-        args: &["--yes", "@zed-industries/codex-acp"],
+        args: &["--yes", "@agentclientprotocol/codex-acp"],
     },
     KnownAgent {
         id: "gemini",
@@ -231,11 +231,38 @@ mod tests {
         assert!(codex_matches[0].available);
         assert_eq!(
             codex_matches[0].args,
-            ["--yes", "@zed-industries/codex-acp"]
+            ["--yes", "@agentclientprotocol/codex-acp"]
         );
         assert!(found
             .iter()
             .any(|candidate| candidate.agent_id == "claude-acp" && !candidate.available));
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn codex_bridge_does_not_require_a_separately_installed_codex_command() {
+        let root = std::env::temp_dir().join(format!(
+            "nekowite-discovery-codex-only-{}",
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("mkdir");
+        let launcher = root.join("npx");
+        fs::write(&launcher, "#!/bin/sh\n").expect("write");
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mut permissions = fs::metadata(&launcher).expect("metadata").permissions();
+            permissions.set_mode(0o755);
+            fs::set_permissions(&launcher, permissions).expect("chmod");
+        }
+
+        let candidate = discover_in_dirs(&[root.clone()])
+            .into_iter()
+            .find(|candidate| candidate.agent_id == "codex-acp")
+            .expect("Codex preset");
+        assert!(candidate.available);
+        assert_eq!(candidate.args, ["--yes", "@agentclientprotocol/codex-acp"]);
         let _ = fs::remove_dir_all(root);
     }
 

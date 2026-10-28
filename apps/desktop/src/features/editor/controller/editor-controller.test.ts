@@ -9,6 +9,7 @@ import {
   configureImageResolver,
   configureWikilinkHandler,
   createEditor,
+  invalidateImageResolution,
 } from '@nekowite/editor-core'
 import { setCalloutView } from '../../../plugins/callout'
 import { editorSessionManager } from '../session-manager'
@@ -29,6 +30,7 @@ vi.mock('@nekowite/editor-core', () => {
     createEditor: vi.fn(() => makeEditor()),
     basicPlugins: [],
     configureImageResolver: vi.fn(),
+    invalidateImageResolution: vi.fn(),
     configureImageNodeMessages: vi.fn(),
     configureHeadingAnchorUrl: vi.fn(),
     configureWikilinkHandler: vi.fn(),
@@ -38,6 +40,7 @@ vi.mock('@nekowite/editor-core', () => {
 
 vi.mock('../../attachments', () => ({
   createImageSrcResolver: vi.fn(() => vi.fn()),
+  isImagePath: (path: string) => /\.(png|jpe?g|gif|webp|bmp|avif|svg)$/i.test(path),
 }))
 vi.mock('../../../plugins/callout', () => ({ setCalloutView: vi.fn() }))
 
@@ -133,5 +136,50 @@ describe('editorController', () => {
 
     // Within one note the token is stable, so the memo still hits.
     expect(options!.scope!()).toBe(scopeB)
+  })
+
+  it('automatically refreshes image URLs when a vault image changes', async () => {
+    useTabsStore().setVault('/vault')
+    let onChange: ((event: { path: string; kind: 'created' | 'modified' | 'removed' | 'resync' }) => void) | undefined
+    const onFsChange = vi.fn(async (listener: typeof onChange) => {
+      onChange = listener
+      return () => { onChange = undefined }
+    })
+    const host = document.createElement('div')
+    const controller = createEditorController({ session, getEditorEl: () => host, onFsChange })
+    controller.mount()
+    await Promise.resolve()
+    await Promise.resolve()
+    vi.mocked(invalidateImageResolution).mockClear()
+
+    onChange?.({ path: '/vault/attachments/diagram.svg', kind: 'modified' })
+    expect(invalidateImageResolution).toHaveBeenCalledTimes(1)
+    onChange?.({ path: '/vault/notes/note.md', kind: 'modified' })
+    expect(invalidateImageResolution).toHaveBeenCalledTimes(1)
+
+    controller.destroy()
+    expect(onChange).toBeUndefined()
+  })
+
+  it('ignores a late filesystem callback after the editor was destroyed', async () => {
+    useTabsStore().setVault('/vault')
+    let onChange: ((event: { path: string; kind: 'created' | 'modified' | 'removed' | 'resync' }) => void) | undefined
+    let resolveSubscription: ((off: () => void) => void) | undefined
+    const off = vi.fn()
+    const onFsChange = vi.fn((listener: typeof onChange) => {
+      onChange = listener
+      return new Promise<() => void>((resolve) => { resolveSubscription = resolve })
+    })
+    const controller = createEditorController({ session, getEditorEl: () => document.createElement('div'), onFsChange })
+    controller.mount()
+    controller.destroy()
+    resolveSubscription?.(off)
+    await Promise.resolve()
+    vi.mocked(invalidateImageResolution).mockClear()
+
+    onChange?.({ path: '/vault/image.png', kind: 'modified' })
+
+    expect(off).toHaveBeenCalledOnce()
+    expect(invalidateImageResolution).not.toHaveBeenCalled()
   })
 })
